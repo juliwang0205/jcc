@@ -130,3 +130,27 @@ cqo: This instruction sign-extends the value in %rax into the %rdx:%rax register
 idiv %rdi: This instruction divides the %rdx:%rax register pair (treated as a single 128-bit value) by the value in the %rdi register (which is 2). The quotient is stored in %rax and the remainder in %rdx. After this instruction, %rax will contain 6.
 
 ret: This instruction returns from the function.
+
+## jcc: Add unary plus and minus
+
+unary minus prior to minus and unary plus prior to plus
+in unary judge minus first 'if (equal(tok, "-"))' expr also has 'if (equal(tok, "-"))', but run after unary. plus the same.
+we can see the rule from the assembly code
+```
+root@ubuntu2004:~/virt/jcc# ./jcc '-10'
+    .globl main
+main:
+    mov $10, %rax
+    neg %rax
+    ret
+root@ubuntu2004:~/virt/jcc# ./jcc '1--10'
+    .globl main
+main:
+    mov $10, %rax
+    neg %rax
+    push %rax
+    mov $1, %rax
+    pop %rdi
+    sub %rdi, %rax
+    ret
+```
