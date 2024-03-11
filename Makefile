@@ -1,7 +1,11 @@
 CFLAGS=-std=c11 -g -fno-common
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
 
-jcc: main.o
-	$(CC) -o jcc main.o $(LDCFLAGS)
+jcc: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDCFLAGS)
+
+$(OBJS): jcc.h
 
 test: jcc
 	./test.sh
