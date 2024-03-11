@@ -154,3 +154,36 @@ main:
     sub %rdi, %rax
     ret
 ```
+
+## jcc:  Split main.c into multiple small files
+### tokenizer to generate tokenizer
+e.g 12 + 34 - 5
+```
+								   /--->		                       	/--->                               /--->                            /--->                           /---> 
+kind = TK_NUM, 					  /		kind = TK_PUNCT,			   /     kind = TK_NUM,				   /	 kind = TK_PUNCT,			/	  kind = TK_NUM,		    /	  kind = TK_NUM,
+next = 0x5555555592d0, ----------/	    next = 0x555555559300, -------/	     next = 0x555555559330,	------/		 next = 0x555555559360,	---/	  next = 0x555555559390,---/      next = 0,
+val = 12, 								val = 0, 							 val = 34,							 val = 0,						  val = 5,					      val = 0,
+loc = 0x7fffffffe628 "12 + 34 - 5", 	loc = 0x7fffffffe62b "+ 34 - 5",	 loc = 0x7fffffffe62d "34 - 5",	     loc = 0x7fffffffe630 "- 5", 	  loc = 0x7fffffffe632 "5",	      loc = 0x7fffffffe633 "",
+len = 2									len = 1								 len = 2							 len = 1						  len = 1						  len = 0
+```
+
+### parse.c for parse the tokenizer, follow the link rule
+https://en.cppreference.com/w/c/language/operator_precedence
+
+### codegen.c to generate the assambly code 
+e.g 12 + 34 - 5
+```
+  .globl main
+main:
+    mov $5, %rax
+    push %rax
+    mov $34, %rax
+    push %rax
+    mov $12, %rax
+    pop %rdi
+    add %rdi, %rax
+    pop %rdi
+    sub %rdi, %rax
+  ret
+```
+
