@@ -187,3 +187,29 @@ main:
   ret
 ```
 
+## jcc: Accept multiple statements separated by semicolons
+### parse
+in new_unary will store the node the parent left hand
+```
+static Node *expr_stmt(Token **rest, Token *tok) {
+    Node *node = new_unary(ND_EXPR_STMT, expr(&tok, tok));
+    *rest = skip(tok, ";");
+    return node;
+}
+```
+```
+static Node *new_unary(NodeKind kind, Node *expr) {
+  Node *node = new_node(kind);
+  node->lhs = expr;
+  return node;
+}
+```
+### codegen
+generate the code from parent left hand node
+```
+static void gen_stmt(Node *node){
+    if(node->kind == ND_EXPR_STMT)
+        gen_expr(node->lhs);
+    return;
+}
+```
