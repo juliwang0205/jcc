@@ -96,7 +96,7 @@ static void gen_stmt(Node *node){
 }
 
 void codegen(Node *node) {
-    printf("    .globl main\n");
+    printf(".globl main\n");
     printf("main:\n");
 
     // Prologue
@@ -110,7 +110,6 @@ void codegen(Node *node) {
     }
 
     printf("    mov %%rbp, %%rsp\n");
-    printf("    pop %%rbp\n");
-    //pop("%rbp");
+    pop("%rbp");
     printf("    ret\n");
 }

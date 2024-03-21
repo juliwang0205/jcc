@@ -213,3 +213,66 @@ static void gen_stmt(Node *node){
     return;
 }
 ```
+
+## jcc: Support single-letter local variables
+### tokenize
+store 'a' ... 'z' into tokenize
+```
+if ('a' <= *p && *p <= 'z') {
+    cur = cur->next = new_token(TK_IDENT, p, p + 1);
+    p ++;
+    continue;
+}
+```
+### parse
+single-letter local variables follow "；" statement 
+stmt->expr_stmt->expr->assign
+
+letter node store in the left hand, value node store in the right hand
+```
+static Node *assign(Token **rest, Token *tok){
+    Node *node = equality(&tok, tok);
+    if (equal(tok, "="))
+        node = new_binary(ND_ASSIGN, node, assign(&tok, tok->next));
+    *rest = tok;
+    return node;
+}
+```
+### codegen
+variable store in the stack
+push variable one by one in stack before assign a value to varibable
+pop varibable one by ine in statck while assign a value to varibable
+##### assembly code for a=b=3; a+b;
+```
+.globl main
+main:
+    push %rbp               ; Save the value of the base pointer (rbp) onto the stack
+    mov %rsp, %rbp          ; Set the base pointer (rbp) to the current value of the stack pointer (rsp)
+    sub $208, %rsp          ; Allocate 208 bytes of space on the stack for local variables
+
+    lea -8(%rbp), %rax      ; Load effective address of -8(%rbp) into %rax
+    push %rax               ; Push the address onto the stack
+    lea -16(%rbp), %rax     ; Load effective address of -16(%rbp) into %rax
+    push %rax               ; Push the address onto the stack
+
+    mov $3, %rax            ; Move the immediate value 3 into %rax
+    pop %rdi                ; Pop the top of the stack into %rdi (first argument)
+    mov %rax, (%rdi)        ; Move the value in %rax (3) into the memory location pointed to by %rdi
+
+    pop %rdi                ; Pop the top of the stack into %rdi (second argument)
+    mov %rax, (%rdi)        ; Move the value in %rax (3) into the memory location pointed to by %rdi
+
+    lea -16(%rbp), %rax     ; Load effective address of -16(%rbp) into %rax
+    mov (%rax), %rax        ; Move the value stored at the address pointed to by %rax into %rax
+    push %rax               ; Push the value onto the stack
+
+    lea -8(%rbp), %rax      ; Load effective address of -8(%rbp) into %rax
+    mov (%rax), %rax        ; Move the value stored at the address pointed to by %rax into %rax
+    pop %rdi                ; Pop the top of the stack into %rdi
+    add %rdi, %rax          ; Add the value in %rdi to %rax
+    mov %rbp, %rsp          ; Restore the stack pointer to the base pointer (clean up stack)
+    pop %rbp                ; Restore the base pointer
+    ret                     ; Return from the function
+```
+
+
