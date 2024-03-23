@@ -1,6 +1,7 @@
 #ifndef __JCC_H_
 #define __JCC_H_
 
+#define _POSIX_C_SOURCE 200809L
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -9,12 +10,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Node Node;
+
 //
 // tokenize.c
 //
 
+// Token
 typedef enum {
-    TK_IDENT, // Identifiers
+    TK_IDENT, // Identifiers e.g a=3 a is a identifier
     TK_PUNCT, // Punctuators
     TK_NUM,   // Numeric literals
     TK_EOF,   // End-of-file
@@ -41,6 +45,23 @@ Token *tokenize(char *input);
 // Parser
 //
 
+// Local variable
+typedef struct Obj Obj;
+struct Obj {
+    Obj *next;
+    char *name;     // Variable name
+    int offset;     // Offset from register 'RBP' 
+};
+
+// Function
+typedef struct Fuction Fuction;
+struct Fuction {
+    Node *body;
+    Obj *locals;
+    int stack_size;
+};
+
+// AST node
 typedef enum {
     ND_ADD,         // +
     ND_SUB,         // -
@@ -58,22 +79,21 @@ typedef enum {
 } NodeKind;
 
 // AST node type
-typedef struct Node Node;
 struct Node {
     NodeKind kind;  // Node kind
     Node *next;     // Next node
     Node *lhs;      // Left-hand side
     Node *rhs;      // Right-hand side
-    char name;      // Used if kind == ND_VAR
+    Obj *var;       // Used if kind == ND_VAR
     int val;        // Used if kind == ND_NUM
 };
 
-Node *parse(Token *tok);
+Fuction *parse(Token *tok);
 
 //
 // codegen.c
 //
 
-void codegen(Node *node);
+void codegen(Fuction *prog);
 
 #endif
