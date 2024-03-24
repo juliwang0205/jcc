@@ -274,5 +274,24 @@ main:
     pop %rbp                ; Restore the base pointer
     ret                     ; Return from the function
 ```
-
+## jcc: Support multi-letter local variables
+Used Obj list link to record variable include name and offset
+```
+typedef struct Obj Obj;
+struct Obj {
+    Obj *next;
+    char *name;     // Variable name
+    int offset;     // Offset from register 'RBP'
+};
+```
+In Function, body records AST node list, locals records variable list.
+stack_size records heap space  that the variable occupied
+```
+typedef struct Fuction Fuction;
+struct Fuction {
+    Node *body;
+    Obj *locals;
+    int stack_size;
+};
+```
 
