@@ -80,6 +80,13 @@ static int read_punct(char *p) {
     return ispunct(*p) ? 1 : 0;
 }
 
+static void convert_keyword(Token *tok) {
+    for(Token *cur = tok; cur; cur = cur->next) {
+        if(equal(cur, "return"))
+            cur->kind = TK_KEYWORD;
+    }
+}
+
 // Tokenize 'current_input' and returns new tokens.
 Token *tokenize(char *p) {
     current_input = p;
@@ -127,5 +134,6 @@ Token *tokenize(char *p) {
     }
 
     cur = cur->next = new_token(TK_EOF, p, p);
+    convert_keyword(head.next);
     return head.next;
 }

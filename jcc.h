@@ -18,10 +18,11 @@ typedef struct Node Node;
 
 // Token
 typedef enum {
-    TK_IDENT, // Identifiers e.g a=3 a is a identifier
-    TK_PUNCT, // Punctuators
-    TK_NUM,   // Numeric literals
-    TK_EOF,   // End-of-file
+    TK_IDENT,   // Identifiers e.g a=3 a is a identifier
+    TK_KEYWORD, // Keywords
+    TK_PUNCT,   // Punctuators
+    TK_NUM,     // Numeric literals
+    TK_EOF,     // End-of-file
 }TokenKind;
 
 //Token type
@@ -73,6 +74,7 @@ typedef enum {
     ND_LT,          // <
     ND_LE,          // <=
     ND_ASSIGN,      // =
+    ND_RETURN,      // "return"
     ND_EXPR_STMT,   // ;
     ND_VAR,         // Variable
     ND_NUM,         // Integer

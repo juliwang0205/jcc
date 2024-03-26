@@ -97,9 +97,16 @@ static void gen_expr(Node *node) {
 }
 
 static void gen_stmt(Node *node){
-    if(node->kind == ND_EXPR_STMT)
+    switch (node->kind) {
+    case ND_RETURN:
         gen_expr(node->lhs);
-    return;
+        printf("    jmp .L.return\n");
+        return;
+        
+    case ND_EXPR_STMT:
+        gen_expr(node->lhs);
+        return;
+    }
 }
 
 /* Assign offset to local variables.
@@ -128,6 +135,7 @@ void codegen(Fuction *prog) {
         assert(depth == 0);
     }
 
+    printf(".L.return:\n");
     printf("    mov %%rbp, %%rsp\n");
     pop("%rbp");
     printf("    ret\n");

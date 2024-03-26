@@ -56,6 +56,19 @@ $8 = {kind = TK_EOF, next = 0x0, val = 0, loc = 0x7fffffffe633 "", len = 0}
 
 ## jcc: Add *, / and ()
 
+use rest to update the rest of the token
+```
+    static Node *expr(Token **rest, Token *tok) {
+        ...
+        *rest = tok;
+        ...
+    }
+    Node *node = expr(&tok, tok);
+
+    if (tok->kind != TK_EOF)
+        error_tok(tok, "extra token");
+```
+
 ```c
 typedef struct Node Node;
 struct Node {
