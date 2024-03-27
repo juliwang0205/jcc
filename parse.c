@@ -5,6 +5,7 @@
  */
 Obj *locals;
 
+static Node *compund_stmt(Token **rest, Token *tok);
 static Node *stmt(Token **rest, Token *tok);
 static Node *expr_stmt(Token **rest, Token *tok);
 static Node *expr(Token **rest, Token *tok);
@@ -64,7 +65,21 @@ static Obj *new_lvar(char *name) {
     return var;
 }
 
+//compund_stmt = stmt* "}"
+static Node *compund_stmt(Token **rest, Token *tok) {
+    Node head = {};
+    Node *cur = &head;
+    while(!equal(tok, "}"))
+        cur = cur->next=stmt(&tok, tok);
+    
+    Node *node = new_node(ND_BLOCK);
+    node->body = head.next;
+    *rest = tok->next;
+    return node;
+}
+
 // stmt = 'return' expr ";"
+//        | compund_stmt 
 //        | expr-stmt
 static Node *stmt(Token **rest, Token *tok) {
     if(equal(tok, "return")) {
@@ -72,6 +87,10 @@ static Node *stmt(Token **rest, Token *tok) {
         *rest = skip(tok, ";");
         return node;
     }
+
+    if(equal(tok, "{")) 
+        return compund_stmt(rest, tok->next);
+
     return expr_stmt(rest, tok);
 }
 
@@ -192,7 +211,7 @@ static Node *unary(Token **rest, Token *tok) {
     return primary(rest, tok);
 }
 
-// primary = "(" expr ")" | ident | num
+// primary = "(" expr ")"  | num | ident
 static Node *primary(Token **rest, Token *tok) {
     if (equal(tok, "(")) {
         Node *node = expr(&tok, tok->next);
@@ -219,14 +238,12 @@ static Node *primary(Token **rest, Token *tok) {
     error_tok(tok, "expected an expression");
 }
 
+// program = compound_stmt *
 Fuction *parse(Token *tok) {
-    Node head = {};
-    Node *cur = &head;
-    while(tok->kind != TK_EOF)
-        cur = cur->next = stmt(&tok, tok);
+    tok = skip(tok, "{");
 
     Fuction *prog = calloc(1, sizeof(Fuction));
-    prog->body = head.next;
+    prog->body = compund_stmt(&tok, tok);
     prog->locals = locals;
     return prog;
 }
