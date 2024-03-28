@@ -308,3 +308,18 @@ struct Fuction {
 };
 ```
 
+# jcc: Add { ... } body
+In node, body records block{...}
+sub block also use body to present the block
+```
+// AST node type
+struct Node {
+    NodeKind kind;  // Node kind
+    Node *next;     // Next node
+    Node *lhs;      // Left-hand side
+    Node *rhs;      // Right-hand side
+    Node *body;     // block {...}
+    Obj *var;       // Used if kind == ND_VAR
+    int val;        // Used if kind == ND_NUM
+};
+```
