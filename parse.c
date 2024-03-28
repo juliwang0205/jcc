@@ -94,8 +94,13 @@ static Node *stmt(Token **rest, Token *tok) {
     return expr_stmt(rest, tok);
 }
 
-// expr-stmt = expr ";"
+// expr-stmt = expr ?  ";"
 static Node *expr_stmt(Token **rest, Token *tok) {
+    if(equal(tok, ";")) {
+        *rest = tok->next;
+        return new_node(ND_BLOCK);
+    }
+    
     Node *node = new_unary(ND_EXPR_STMT, expr(&tok, tok));
     *rest = skip(tok, ";");
     return node;
