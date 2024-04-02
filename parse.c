@@ -5,6 +5,8 @@
  */
 Obj *locals;
 
+int debug_count = 0;
+
 static Node *compund_stmt(Token **rest, Token *tok);
 static Node *stmt(Token **rest, Token *tok);
 static Node *expr_stmt(Token **rest, Token *tok);
@@ -69,8 +71,12 @@ static Obj *new_lvar(char *name) {
 static Node *compund_stmt(Token **rest, Token *tok) {
     Node head = {};
     Node *cur = &head;
-    while(!equal(tok, "}"))
+    while(!equal(tok, "}")) {
         cur = cur->next=stmt(&tok, tok);
+        debug_count += 1;
+        printf("debug_count = %d\n", debug_count);
+    }
+        
     
     Node *node = new_node(ND_BLOCK);
     node->body = head.next;
@@ -79,16 +85,29 @@ static Node *compund_stmt(Token **rest, Token *tok) {
 }
 
 // stmt = 'return' expr ";"
+//        | "if" "(" expr ")" stmt ("else" stmt) ?
 //        | compund_stmt 
 //        | expr-stmt
 static Node *stmt(Token **rest, Token *tok) {
-    if(equal(tok, "return")) {
+    if (equal(tok, "return")) {
         Node *node = new_unary(ND_RETURN, expr(&tok, tok->next));
         *rest = skip(tok, ";");
         return node;
     }
 
-    if(equal(tok, "{")) 
+    if (equal(tok, "if")) {
+        Node *node = new_node(ND_IF);
+        tok = skip(tok->next, "(");
+        node->cond = expr(&tok, tok);
+        tok = skip(tok, ")");
+        node->then = stmt(&tok, tok);
+        if (equal(tok, "else")) 
+            node->els = stmt(&tok, tok->next);
+        *rest = tok;
+        return node;
+    }
+    
+    if (equal(tok, "{")) 
         return compund_stmt(rest, tok->next);
 
     return expr_stmt(rest, tok);
@@ -96,7 +115,7 @@ static Node *stmt(Token **rest, Token *tok) {
 
 // expr-stmt = expr ?  ";"
 static Node *expr_stmt(Token **rest, Token *tok) {
-    if(equal(tok, ";")) {
+    if (equal(tok, ";")) {
         *rest = tok->next;
         return new_node(ND_BLOCK);
     }
@@ -207,6 +226,7 @@ static Node *mul(Token **rest, Token *tok) {
 // unary = ("+" | "-") unary
 //       | primary
 static Node *unary(Token **rest, Token *tok) {
+    // move next after "+" 
     if (equal(tok, "+"))
         return unary(rest, tok->next);
 
@@ -232,7 +252,7 @@ static Node *primary(Token **rest, Token *tok) {
 
     if (tok->kind == TK_IDENT) {
         // if the first define a variable var is NULL
-        // if not the first then use the last info about it 'name offset'
+        // if not the first then use the last info included :'name、offset'
         Obj *var = find_var(tok);
         if (!var)
             var = new_lvar(strndup(tok->loc, tok->len));
