@@ -308,7 +308,7 @@ struct Fuction {
 };
 ```
 
-# jcc: Add { ... } body
+## jcc: Add { ... } body
 In node, body records block{...}
 sub block also use body to present the block
 ```
@@ -323,3 +323,8 @@ struct Node {
     int val;        // Used if kind == ND_NUM
 };
 ```
+
+## jcc: if for and while
+add node *cond, *then, *els for "if"
+add node *cond, *int and *inc for "for" and "while"
+
